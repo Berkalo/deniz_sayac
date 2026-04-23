@@ -1441,7 +1441,7 @@ const T = {
   }
 };
 
-let LANG = 'tr';
+let LANG = 'en';
 
 function applyLang(){
   const t = T[LANG];
@@ -1723,7 +1723,7 @@ const darkExit = document.getElementById('darkExit');
 function openPw(){ pwBack.classList.add('on'); pwInput.value = ''; pwErr.textContent = ''; setTimeout(() => pwInput.focus(), 50); }
 function closePw(){ pwBack.classList.remove('on'); }
 
-document.getElementById('secretDot').addEventListener('click', () => { /* routed below */ });
+document.getElementById('secretDot').addEventListener('click', () => openPwFor('alevi'));
 pwCancel.addEventListener('click', closePw);
 pwBack.addEventListener('click', e => { if (e.target === pwBack) closePw(); });
 pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwGo.click(); });
@@ -1895,7 +1895,7 @@ function openPwFor(kind){
   setTimeout(() => pwInput.focus(), 50);
 }
 
-doorBtn.addEventListener('click', () => openPwFor('alevi'));
+doorBtn.addEventListener('click', () => openPwFor('dark'));
 
 // Override pw handlers to route by target
 pwGo.replaceWith(pwGo.cloneNode(true));
