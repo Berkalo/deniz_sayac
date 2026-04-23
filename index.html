@@ -1179,16 +1179,14 @@ footer {
 
 <button class="alevi-close" id="aleviCloseBtn" style="display:none;">✕ kapat</button>
 
-<!-- MUSIC PLAYER -->
+<!-- MUSIC PLAYER (YouTube-backed) -->
 <div class="player" id="player" aria-label="Music">
   <div class="disc"></div>
-  <div class="label" id="playerLabel">şimdi<br>çalıyor…</div>
+  <div class="label" id="playerLabel">now<br>spinning…</div>
   <button id="playBtn" aria-label="Play/Pause">▶</button>
-  <audio id="audio" loop>
-    <!-- Drop an mp3 here and set src to enable real playback -->
-    <source src="your-song-here.mp3" type="audio/mpeg" />
-  </audio>
 </div>
+<!-- Hidden YouTube iframe player -->
+<div id="ytHost" style="position:fixed; left:-9999px; top:-9999px; width:1px; height:1px; pointer-events:none; opacity:0;"></div>
 
 <!-- GUESTBOOK MODAL -->
 <div class="modal-back" id="modal">
@@ -1616,30 +1614,79 @@ document.addEventListener('mousemove', e => {
 });
 
 /* ==========================================================
-   MUSIC PLAYER
+   MUSIC PLAYER — YouTube IFrame API backed
+   Video: https://www.youtube.com/watch?v=pFptt7Cargc
    ========================================================== */
+const YT_VIDEO_ID = 'pFptt7Cargc';
 const player = document.getElementById('player');
-const audio  = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
 let playing = false;
-playBtn.addEventListener('click', async () => {
-  playing = !playing;
-  if (playing){
-    try { await audio.play(); } catch(e){}
-    player.classList.add('on');
+let ytPlayer = null;
+let ytReady = false;
+
+// Load YouTube IFrame API
+(function(){
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+window.onYouTubeIframeAPIReady = function() {
+  ytPlayer = new YT.Player('ytHost', {
+    height: '1',
+    width: '1',
+    videoId: YT_VIDEO_ID,
+    playerVars: {
+      autoplay: 0,
+      loop: 1,
+      playlist: YT_VIDEO_ID,
+      controls: 0,
+      modestbranding: 1,
+      playsinline: 1
+    },
+    events: {
+      onReady: (e) => {
+        ytReady = true;
+        // Try autoplay muted (browsers allow that)
+        try {
+          e.target.mute();
+          e.target.playVideo();
+          player.classList.add('on');
+          playBtn.textContent = '🔊';
+          playing = true;
+        } catch(err){}
+      },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.PLAYING){
+          player.classList.add('on');
+          playBtn.textContent = ytPlayer.isMuted() ? '🔊' : '❚❚';
+          playing = true;
+        } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED){
+          player.classList.remove('on');
+          playBtn.textContent = '▶';
+          playing = false;
+        }
+      }
+    }
+  });
+};
+
+playBtn.addEventListener('click', () => {
+  if (!ytReady || !ytPlayer) return;
+  // If playing but muted (from autoplay), first click unmutes
+  if (playing && ytPlayer.isMuted()){
+    ytPlayer.unMute();
+    ytPlayer.setVolume(60);
     playBtn.textContent = '❚❚';
-  } else {
-    try { audio.pause(); } catch(e){}
-    player.classList.remove('on');
-    playBtn.textContent = '▶';
+    return;
   }
-});
-window.addEventListener('load', () => {
-  audio.play().then(() => {
-    player.classList.add('on');
-    playBtn.textContent = '❚❚';
-    playing = true;
-  }).catch(() => {});
+  if (playing){
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.unMute();
+    ytPlayer.setVolume(60);
+    ytPlayer.playVideo();
+  }
 });
 
 /* ==========================================================
