@@ -429,6 +429,149 @@ body::before {
 .cem-circle span:nth-child(2n) { animation-direction: reverse; }
 @keyframes twirl { to { transform: rotate(360deg); } }
 
+.yol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px auto 8px;
+  max-width: 760px;
+  text-align: left;
+}
+.yol-item {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Caveat', cursive;
+  font-size: 19px;
+  color: #ffeabf;
+}
+.yol-item b { color: var(--gold); font-family: 'Permanent Marker', cursive; font-size: 16px; letter-spacing: 1px; }
+@media (max-width: 640px) { .yol-grid { grid-template-columns: 1fr; } }
+
+/* ===== CHAOS / FORTUNE / BEER-O-METER ===== */
+.fun-grid {
+  max-width: 1000px;
+  margin: 60px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+.fun-card {
+  background: linear-gradient(135deg, #1a0028, #330047);
+  border: 3px solid var(--hot-pink);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 6px 6px 0 #000, 0 0 20px rgba(255,46,196,0.3);
+  transform: rotate(-0.8deg);
+  position: relative;
+}
+.fun-card:nth-child(2) { border-color: var(--electric-blue); box-shadow: 6px 6px 0 #000, 0 0 20px rgba(0,229,255,0.3); transform: rotate(1deg); }
+.fun-card:nth-child(3) { border-color: var(--lime);        box-shadow: 6px 6px 0 #000, 0 0 20px rgba(184,255,60,0.3);  transform: rotate(-1.2deg); }
+.fun-card h3 {
+  font-family: 'Lilita One', sans-serif;
+  color: #fff;
+  font-size: 22px;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 2px 2px 0 var(--hot-pink);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+.fun-card p, .fun-card .out {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  line-height: 1.3;
+  color: #fff;
+  min-height: 60px;
+}
+.fun-card button {
+  margin-top: 10px;
+  font-family: 'Permanent Marker', cursive;
+  padding: 8px 16px;
+  background: var(--gold);
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+.fun-card button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #000; }
+
+.beer-meter {
+  height: 28px;
+  background: #000;
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+}
+.beer-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(45deg, #ffb347 0 10px, #ffcc33 10px 20px);
+  transition: width 1s ease;
+}
+.beer-meter-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  color: #000; font-weight: bold; font-size: 14px; letter-spacing: 2px;
+  text-shadow: 0 0 4px #fff;
+}
+
+/* ===== BINGO ===== */
+.bingo {
+  max-width: 720px;
+  margin: 50px auto;
+  padding: 22px;
+  background: #fff;
+  color: #000;
+  border: 4px solid #000;
+  box-shadow: 8px 8px 0 var(--hot-pink), 8px 8px 0 4px #000;
+  transform: rotate(0.5deg);
+}
+.bingo h2 {
+  font-family: 'Lilita One', sans-serif;
+  text-align: center;
+  font-size: clamp(22px, 3vw, 32px);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  color: #000;
+}
+.bingo .grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.bingo .cell {
+  aspect-ratio: 1;
+  border: 2px solid #000;
+  background: #fff8e7;
+  padding: 6px;
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+  line-height: 1.15;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background 0.2s;
+}
+.bingo .cell:hover { background: #ffe8b6; }
+.bingo .cell.on { background: var(--hot-pink); color: #fff; }
+.bingo .cell.on::after {
+  content: "✕";
+  position: absolute;
+  font-size: 60px;
+  color: rgba(0,0,0,0.6);
+  font-family: 'Permanent Marker', cursive;
+}
+@media (max-width: 520px) { .bingo .cell { font-size: 14px; } }
+
 /* ===== FACTS ===== */
 .facts { max-width: 860px; margin: 60px auto; padding: 24px; background: #000; border: 3px solid var(--lime); border-radius: 12px; box-shadow: 0 0 30px rgba(184,255,60,0.5); transform: rotate(-0.7deg); }
 .facts h2 { font-family: 'Monoton', cursive; color: var(--lime); font-size: clamp(26px,4vw,44px); text-align: center; margin-bottom: 18px; letter-spacing: 2px; }
@@ -852,8 +995,8 @@ footer {
       <div class="caption" data-tr="baş karakter enerjisi" data-en="main character energy">baş karakter enerjisi</div>
     </div>
     <div class="polaroid p5"><div class="tape"></div>
-      <img src="photos/deniz5.jpeg" alt="Deniz 5" />
-      <div class="caption" data-tr="ankara öncesi devir 💔" data-en="pre-ankara era 💔">ankara öncesi devir 💔</div>
+      <img src="photos/deniz5.png" alt="Deniz 5" />
+      <div class="caption" data-tr="ışığıyla bizi yakan ✦" data-en="burning us with her light ✦">ışığıyla bizi yakan ✦</div>
     </div>
   </section>
 
@@ -866,22 +1009,65 @@ footer {
 
   <!-- ALEVI SECTION -->
   <section class="alevi">
-    <h2 id="aleviTitle">✦ ALEVİ KÖŞESİ: EYVALLAH ✦</h2>
+    <h2 id="aleviTitle">✦ ALEVİ KÖŞESİ: EYVALLAH CANIM ✦</h2>
     <div class="saz">🎶</div>
     <div class="cem-circle">
-      <span>🕯️</span><span>🌙</span><span>☀️</span><span>💧</span><span>🔥</span><span>🌳</span>
+      <span>🕯️</span><span>🌙</span><span>☀️</span><span>💧</span><span>🔥</span><span>🌳</span><span>🦁</span>
     </div>
     <p id="aleviIntro">
-      bir semah döner, bir deniz gelir. cem meydanı hazır, dede hazır, canlar hazır. eline diline beline sahip ol, biranı soğut, yoldaşını bekle.
+      Hak - Muhammed - Ali aşkına: bir semah döner, bir deniz gelir. Cem meydanı kuruldu, dede postunu serdi, canlar halka oldu. <b>Eline, diline, beline sahip ol</b> — gerisi muhabbet.
     </p>
-    <p class="sozu" id="aleviSozu">
-      "gelin canlar bir olalım, iri olalım, diri olalım."
+
+    <p class="sozu" id="pirSultanReal">"Açılın kapılar Şah'a gidelim — ve yolda Deniz'e uğrayalım."</p>
+    <p class="kaynak">— Pir Sultan Abdal (uyarlama, canlar hoş görsün)</p>
+
+    <p class="sozu" id="haciBektas">"Gelin canlar bir olalım, iri olalım, diri olalım. Sofraya bir bira daha koyalım, Deniz geliyor."</p>
+    <p class="kaynak">— Hacı Bektaş Veli (güncellenmiş)</p>
+
+    <p class="sozu" id="onikiImam">"Yâ Ali medet, yâ On İki İmam, yâ Hızır — uçağı zamanında indirin."</p>
+    <p class="kaynak">— gülbank-ı mahsus, 5 mayıs versiyonu</p>
+
+    <!-- Yol & erkân kısa sözlük -->
+    <div class="yol-grid" id="yolGrid">
+      <div class="yol-item"><b>Yol:</b> <span data-tr="Hak yolu. Bugün ankara-esenboğa hattı." data-en="The path. Today: the ankara-esenboğa line.">Hak yolu. Bugün ankara-esenboğa hattı.</span></div>
+      <div class="yol-item"><b>Razılık:</b> <span data-tr="Birbirinden razı olmak. Biradan razı olmak. Deniz'den razı olmak." data-en="Being at peace with each other. With beer. With Deniz.">Birbirinden razı olmak. Biradan razı olmak. Deniz'den razı olmak.</span></div>
+      <div class="yol-item"><b>Musahip:</b> <span data-tr="Yol kardeşi. Seninle aynı kadehi kaldıran can." data-en="Path sibling. The one who raises the same glass.">Yol kardeşi. Seninle aynı kadehi kaldıran can.</span></div>
+      <div class="yol-item"><b>Niyaz:</b> <span data-tr="Saygı. Deniz gelince önce bira, sonra sarılma." data-en="Reverence. When Deniz arrives: first beer, then hug.">Saygı. Deniz gelince önce bira, sonra sarılma.</span></div>
+      <div class="yol-item"><b>Muhabbet:</b> <span data-tr="Can sohbeti. 5 mayıs sabah 05:00'e kadar sürer." data-en="Soul conversation. Runs until 05:00 on may 5th.">Can sohbeti. 5 mayıs sabah 05:00'e kadar sürer.</span></div>
+      <div class="yol-item"><b>Semah:</b> <span data-tr="Dönmek = yol almak. Deniz de dönüyor." data-en="To turn is to travel the path. Deniz is turning back too.">Dönmek = yol almak. Deniz de dönüyor.</span></div>
+    </div>
+
+    <p class="sozu" id="aleviClose" style="margin-top:16px;">
+      <b>Hak Muhammed Ali, yâ Şâh-ı Merdân</b> — kapı açık, post serili, canlar hazır, buzdolabı dolu. Aşk ile. <b>Eyvallah.</b>
     </p>
-    <p class="kaynak">— HACI BEKTAŞ VELİ</p>
-    <p class="sozu" id="pirSultan">
-      "eyvallah deniz. çarşambayı sel aldı, bir yâr sevdim el aldı — ama 5 mayısta geri alıyoruz."
+  </section>
+
+  <!-- FUN CARDS: FORTUNE / CHAOS / BEER-O-METER -->
+  <section class="fun-grid">
+    <div class="fun-card">
+      <h3 id="fortuneTitle">✦ Deniz Fal Makinesi ✦</h3>
+      <p class="out" id="fortuneOut" data-tr="butona bas, Deniz'den bir gaip mesaj al." data-en="press the button to receive a cryptic message from Deniz.">butona bas, Deniz'den bir gaip mesaj al.</p>
+      <button id="fortuneBtn" data-tr="fal çek 🔮" data-en="draw ✨">fal çek 🔮</button>
+    </div>
+    <div class="fun-card">
+      <h3 id="chaosTitle">⚡ KAOS BUTONU ⚡</h3>
+      <p class="out" id="chaosOut" data-tr="bas ve pişman ol." data-en="push it and regret it.">bas ve pişman ol.</p>
+      <button id="chaosBtn" data-tr="BAS BANA" data-en="PUSH ME">BAS BANA</button>
+    </div>
+    <div class="fun-card">
+      <h3 id="beerMeterTitle">🍺 BİRA-O-METRE 🍺</h3>
+      <div class="beer-meter"><div class="beer-meter-fill" id="beerFill"></div><div class="beer-meter-label" id="beerLabel">0%</div></div>
+      <p class="out" id="beerMeterSub" data-tr="Deniz'in gelişine bira hazırlık seviyesi." data-en="beer-readiness level for Deniz's arrival.">Deniz'in gelişine bira hazırlık seviyesi.</p>
+    </div>
+  </section>
+
+  <!-- DENIZ BINGO -->
+  <section class="bingo">
+    <h2 id="bingoTitle">☆ DENİZ GELİNCE YAPILACAKLAR BİNGOSU ☆</h2>
+    <p id="bingoSub" style="text-align:center; font-family:'Caveat',cursive; font-size:20px; margin-bottom:10px;">
+      kareleri tıkla, bingo yap. tiklaman tarayıcında saklanır.
     </p>
-    <p class="kaynak" id="pirKaynak">— pir sultan abdal olsaydı, muhtemelen böyle derdi</p>
+    <div class="grid" id="bingoGrid"></div>
   </section>
 
   <!-- FUN FACTS -->
@@ -1048,7 +1234,45 @@ const T = {
       "✨ efes'in farklı hissettirmesine {d} gün ✨",
       "🎶 {d} gün sonra semah dönecek, bira dökülmeyecek 🎶"
     ],
-    tickerText: "★ DENİZ GELİYOR ★ ANKARA HAZIR DEĞİL ★ BİRA SAATİ YAKLAŞIYOR ★ EYVALLAH ★"
+    tickerText: "★ DENİZ GELİYOR ★ ANKARA HAZIR DEĞİL ★ BİRA SAATİ YAKLAŞIYOR ★ EYVALLAH ★ HAK MUHAMMED ALİ ★",
+    fortuneTitle: "✦ Deniz Fal Makinesi ✦",
+    fortuneBtn: "fal çek 🔮",
+    fortuneDefault: "butona bas, Deniz'den bir gaip mesaj al.",
+    fortunes: [
+      "bu hafta biran soğuyacak. sevdiklerinle iç.",
+      "Hızır yoluna çıkacak, uçağın inecek.",
+      "içten bir eyvallah söyle, kapı kendiliğinden açılır.",
+      "bir yabancı sana 'abla müsait misin' diyecek. müsait değilsin.",
+      "kızılırmak sana selam gönderiyor.",
+      "bu akşam bir saz sesi duyarsan, bil ki Deniz düşünüyor seni.",
+      "yarın biri sana içki ısmarlayacak. kabul et, kader bu.",
+      "Pir Sultan bir rüyana girdi, güldü ve çıktı. sebep yok.",
+      "semah dönerken sakın telefonuna bakma.",
+      "yolun açık, postun serili, buzdolabın dolu. sen varsın."
+    ],
+    chaosTitle: "⚡ KAOS BUTONU ⚡",
+    chaosBtn: "BAS BANA",
+    chaosDefault: "bas ve pişman ol.",
+    chaoses: [
+      "KAOS! ekran 2 saniye ters döndü.",
+      "KAOS! sana virtüel bir bira ikram edildi 🍻",
+      "KAOS! Deniz'in bir fotoğrafı biraz daha hızlı uçuyor şimdi.",
+      "KAOS! rastgele bir semah başladı (CSS'te).",
+      "KAOS! bira-o-metre az önce %3 arttı.",
+      "KAOS! sayfana glitter bombası attım.",
+      "KAOS! arka planda görünmez bir dede gülbank çekiyor.",
+      "KAOS! az önce birisi 'eyvallah' dedi, duymadın."
+    ],
+    beerMeterTitle: "🍺 BİRA-O-METRE 🍺",
+    beerMeterSub: "Deniz'in gelişine bira hazırlık seviyesi.",
+    bingoTitle: "☆ DENİZ GELİNCE YAPILACAKLAR BİNGOSU ☆",
+    bingoSub: "kareleri tıkla, bingo yap. tiklaman tarayıcında saklanır.",
+    bingoCells: [
+      "ilk birayı aç","sıkı sarıl","birlikte semah dön","menemen söz ver","kızılcahamam planla",
+      "gece 2'de muhabbet","saz dinle","anıtkabir yürüyüşü","efes + patates","eski fotoğrafları aç",
+      "birlikte ağla","uzun bir uyku","pir sultan çal","kahvaltıya git","tuborg yarıştır",
+      "birlikte küfür et","bir şey söz ver","eyvallah de"
+    ]
   },
   en: {
     title: "★ THE DENIZ COUNTDOWN ★ ANKARA AWAITS ★",
@@ -1097,7 +1321,45 @@ const T = {
       "✨ {d} days until the efes hits different ✨",
       "🎶 in {d} days the semah turns and no beer is spilled 🎶"
     ],
-    tickerText: "★ DENIZ IS COMING ★ ANKARA IS NOT READY ★ BEER O'CLOCK APPROACHING ★ EYVALLAH ★"
+    tickerText: "★ DENIZ IS COMING ★ ANKARA IS NOT READY ★ BEER O'CLOCK APPROACHING ★ EYVALLAH ★ HAK MUHAMMED ALİ ★",
+    fortuneTitle: "✦ The Deniz Fortune Machine ✦",
+    fortuneBtn: "draw ✨",
+    fortuneDefault: "press the button for a cryptic message from Deniz.",
+    fortunes: [
+      "your beer will be cold this week. drink it with the ones you love.",
+      "Hızır will walk your path, your plane will land on time.",
+      "say an honest 'eyvallah' and the door will open by itself.",
+      "a stranger will ask if you're free tonight. you are not.",
+      "the kızılırmak river sends her regards.",
+      "if you hear a saz tonight, know that Deniz is thinking of you.",
+      "tomorrow someone buys you a drink. accept — it's destiny.",
+      "Pir Sultan walked into your dream, laughed, and left. no reason.",
+      "don't check your phone mid-semah.",
+      "your path is open, your post is laid, your fridge is full. you are."
+    ],
+    chaosTitle: "⚡ CHAOS BUTTON ⚡",
+    chaosBtn: "PUSH ME",
+    chaosDefault: "push it and regret it.",
+    chaoses: [
+      "CHAOS! screen flipped for 2 seconds.",
+      "CHAOS! a virtual beer has been served 🍻",
+      "CHAOS! one of Deniz's photos flies a bit faster now.",
+      "CHAOS! a random semah just began (in CSS).",
+      "CHAOS! the beer-o-meter just rose by 3%.",
+      "CHAOS! glitter bomb deployed.",
+      "CHAOS! an invisible dede is reciting a gülbank in the background.",
+      "CHAOS! someone just said 'eyvallah', you didn't hear it."
+    ],
+    beerMeterTitle: "🍺 BEER-O-METER 🍺",
+    beerMeterSub: "beer-readiness level for Deniz's arrival.",
+    bingoTitle: "☆ THINGS TO DO WHEN DENIZ ARRIVES BINGO ☆",
+    bingoSub: "tap a square to cross it off. your marks are saved in your browser.",
+    bingoCells: [
+      "open the first beer","long hug","do a semah together","promise menemen","plan kızılcahamam",
+      "2am deep talk","listen to saz","walk to anıtkabir","efes + fries","open old photos",
+      "cry together","one long nap","play pir sultan","go to breakfast","tuborg race",
+      "curse together","promise something","say eyvallah"
+    ]
   }
 };
 
@@ -1148,6 +1410,29 @@ function applyLang(){
   // ticker
   const track = document.getElementById('tickerTrack');
   track.innerHTML = '<span>' + t.tickerText.repeat(4) + '</span><span>' + t.tickerText.repeat(4) + '</span>';
+
+  // fun cards
+  document.getElementById('fortuneTitle').textContent = t.fortuneTitle;
+  document.getElementById('fortuneBtn').textContent   = t.fortuneBtn;
+  const fo = document.getElementById('fortuneOut');
+  if (!fo.dataset.drawn) fo.textContent = t.fortuneDefault;
+  document.getElementById('chaosTitle').textContent = t.chaosTitle;
+  document.getElementById('chaosBtn').textContent   = t.chaosBtn;
+  const co = document.getElementById('chaosOut');
+  if (!co.dataset.drawn) co.textContent = t.chaosDefault;
+  document.getElementById('beerMeterTitle').textContent = t.beerMeterTitle;
+  document.getElementById('beerMeterSub').textContent   = t.beerMeterSub;
+
+  // yol-grid spans
+  document.querySelectorAll('.yol-item span').forEach(el => {
+    const v = el.getAttribute('data-' + LANG);
+    if (v) el.textContent = v;
+  });
+
+  // bingo
+  document.getElementById('bingoTitle').textContent = t.bingoTitle;
+  document.getElementById('bingoSub').textContent   = t.bingoSub;
+  renderBingo();
 
   document.getElementById('btn-tr').classList.toggle('on', LANG === 'tr');
   document.getElementById('btn-en').classList.toggle('on', LANG === 'en');
@@ -1426,10 +1711,90 @@ function updateDarkCounter(){
 }
 setInterval(updateDarkCounter, 30000);
 
+/* ==========================================================
+   FORTUNE / CHAOS / BEER-O-METER / BINGO
+   ========================================================== */
+document.getElementById('fortuneBtn').addEventListener('click', () => {
+  const arr = T[LANG].fortunes;
+  const pick = arr[(Math.random()*arr.length)|0];
+  const out = document.getElementById('fortuneOut');
+  out.textContent = '🔮 ' + pick;
+  out.dataset.drawn = '1';
+});
+
+let chaosLevel = 0;
+document.getElementById('chaosBtn').addEventListener('click', () => {
+  const arr = T[LANG].chaoses;
+  const pick = arr[(Math.random()*arr.length)|0];
+  const out = document.getElementById('chaosOut');
+  out.textContent = pick;
+  out.dataset.drawn = '1';
+  chaosLevel++;
+
+  // visual effects
+  const kind = (Math.random()*4)|0;
+  if (kind === 0){
+    document.body.style.transition = 'transform 0.4s';
+    document.body.style.transform = 'rotate(180deg)';
+    setTimeout(() => { document.body.style.transform = ''; }, 2000);
+  } else if (kind === 1){
+    for (let i=0;i<40;i++) setTimeout(spawnFloater, i*15);
+  } else if (kind === 2){
+    fliers.forEach(f => { f.dx *= 1.3; f.dy *= 1.3; });
+  } else {
+    bumpBeerMeter(3);
+  }
+});
+
+// Beer-o-meter climbs as countdown approaches
+function updateBeerMeter(){
+  const now = new Date();
+  const total = TARGET_DATE - new Date(TARGET_DATE - 30*86400000); // 30-day window
+  const left = TARGET_DATE - now;
+  let pct = 100 - (left / total * 100);
+  pct = Math.max(0, Math.min(100, pct));
+  setBeerMeter(pct);
+}
+function setBeerMeter(pct){
+  pct = Math.max(0, Math.min(100, pct));
+  document.getElementById('beerFill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('beerLabel').textContent = pct.toFixed(0) + '% ' + (LANG === 'tr' ? 'HAZIR' : 'READY');
+}
+function bumpBeerMeter(delta){
+  const cur = parseFloat(document.getElementById('beerFill').style.width) || 0;
+  setBeerMeter(cur + delta);
+}
+setInterval(updateBeerMeter, 30000);
+
+// Bingo
+const BINGO_KEY = 'deniz-bingo-v1';
+function loadBingo(){ try { return JSON.parse(localStorage.getItem(BINGO_KEY)) || {}; } catch(e){ return {}; } }
+function saveBingo(s){ localStorage.setItem(BINGO_KEY, JSON.stringify(s)); }
+function renderBingo(){
+  const grid = document.getElementById('bingoGrid');
+  if (!grid) return;
+  const cells = T[LANG].bingoCells.slice(0, 9);
+  const state = loadBingo();
+  grid.innerHTML = '';
+  cells.forEach((txt, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell' + (state[i] ? ' on' : '');
+    c.textContent = txt;
+    c.addEventListener('click', () => {
+      const s = loadBingo();
+      s[i] = !s[i];
+      saveBingo(s);
+      c.classList.toggle('on', !!s[i]);
+    });
+    grid.appendChild(c);
+  });
+}
+
 /* boot */
 applyLang();
 tick();
 setInterval(tick, 1000);
+updateBeerMeter();
 </script>
 </body>
 </html>
