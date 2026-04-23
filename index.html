@@ -1208,7 +1208,7 @@ footer {
   <section class="guestbook-wrap">
     <h2 id="gbTitle">★ ziyaretçi defterini imzala ★</h2>
     <p id="gbSub" style="font-family:'Caveat',cursive; font-size:22px; color:#fff; margin-bottom:14px;">
-      bir mesaj, bir tahmin ya da bir bira siparişi bırak. (mesajın yıldız, utku ve ilksen'e e-posta olarak gider. ayrıca tarayıcında da saklanır.)
+      bir mesaj, bir tahmin ya da bir bira siparişi bırak. (tarayıcında saklanır.)
     </p>
     <button class="btn-chrome" id="openGuest">✎ mesaj bırak</button>
     <div class="entries" id="entries"></div>
@@ -1303,11 +1303,6 @@ footer {
    CONFIG
    ========================================================== */
 const TARGET_DATE = new Date(2026, 4, 5, 17, 0, 0); // May 5, 2026, 17:00 local (month is 0-indexed)
-const RECIPIENTS = [
-  "yildirdeniz@gmail.com",
-  "utkuunalan@gmail.com",
-  "ilksensenocak@outlook.com"
-];
 const SECRET_PASSWORD = "BİRABİTTİ";
 
 /* ==========================================================
@@ -1328,7 +1323,7 @@ const JSONBIN_ID  = "YOUR_BIN_ID_HERE";
 const JSONBIN_KEY = "YOUR_ACCESS_KEY_HERE";
 const JSONBIN_CONFIGURED = !JSONBIN_ID.startsWith("YOUR_") && !JSONBIN_KEY.startsWith("YOUR_");
 
-async function fetchArrivedRemote(){
+async function fetchStateRemote(){
   if (!JSONBIN_CONFIGURED) return null;
   try {
     const r = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID + '/latest', {
@@ -1336,19 +1331,38 @@ async function fetchArrivedRemote(){
     });
     if (!r.ok) return null;
     const j = await r.json();
-    return j && j.record && j.record.arrived === true;
+    const rec = (j && j.record) || {};
+    return { arrived: rec.arrived === true, entries: Array.isArray(rec.entries) ? rec.entries : [] };
   } catch(e){ return null; }
 }
-async function setArrivedRemote(){
+async function putStateRemote(state){
   if (!JSONBIN_CONFIGURED) return false;
   try {
     const r = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Access-Key': JSONBIN_KEY },
-      body: JSON.stringify({ arrived: true })
+      body: JSON.stringify(state)
     });
     return r.ok;
   } catch(e){ return false; }
+}
+async function fetchArrivedRemote(){
+  const s = await fetchStateRemote();
+  return s ? s.arrived : null;
+}
+async function setArrivedRemote(){
+  const s = await fetchStateRemote();
+  const next = s ? Object.assign({}, s, { arrived: true }) : { arrived: true, entries: [] };
+  return putStateRemote(next);
+}
+async function appendEntryRemote(entry){
+  const s = await fetchStateRemote();
+  if (!s) return false;
+  const entries = (s.entries || []).slice();
+  entries.push(entry);
+  // cap at 200 entries so the bin stays small
+  const trimmed = entries.slice(-200);
+  return putStateRemote({ arrived: s.arrived === true, entries: trimmed });
 }
 
 /* ==========================================================
@@ -1385,7 +1399,7 @@ const T = {
       "çankaya'da bir pir sultan heykeli dün sabah \"deniz mi geliyor\" diye soracak kadar canlandı (kaynak: komşu teyze)."
     ],
     gbTitle: "★ ziyaretçi defterini imzala ★",
-    gbSub: "bir mesaj, bir tahmin ya da bir bira siparişi bırak. (mesajın yıldız, utku ve ilksen'e e-posta olarak gider. ayrıca tarayıcında da saklanır.)",
+    gbSub: "bir mesaj, bir tahmin ya da bir bira siparişi bırak. (tarayıcında saklanır.)",
     openGuest: "✎ mesaj bırak",
     modalTitle: "deniz'e bir mesaj bırak ✿",
     gNamePh: "adın (ya da havalı bir takma ad)",
@@ -1472,7 +1486,7 @@ const T = {
       "a statue of pir sultan in çankaya briefly animated yesterday to ask \"is deniz coming\" (source: neighbor auntie)."
     ],
     gbTitle: "★ sign the guestbook ★",
-    gbSub: "leave a message, prediction, or beer order. (it gets emailed to yıldız, utku and ilksen. also saved in your browser.)",
+    gbSub: "leave a message, prediction, or beer order. (saved in your browser.)",
     openGuest: "✎ leave a message",
     modalTitle: "leave a message for deniz ✿",
     gNamePh: "your name (or a cool alias)",
@@ -1796,6 +1810,14 @@ const entriesEl = document.getElementById('entries');
 
 function loadEntries(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e){ return []; } }
 function saveEntries(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+// merge two entry lists by (at + name + msg), preserving order by timestamp
+function mergeEntries(a, b){
+  const key = e => (e.at || 0) + '|' + (e.name || '') + '|' + (e.msg || '');
+  const map = new Map();
+  a.concat(b).forEach(e => { if (e && e.msg) map.set(key(e), e); });
+  return Array.from(map.values()).sort((x, y) => (x.at || 0) - (y.at || 0));
+}
 function escapeHtml(s){ return (s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
 function renderEntries(){
   const list = loadEntries();
@@ -1824,60 +1846,28 @@ saveBtn.addEventListener('click', async () => {
   const name = gName.value.trim();
   const msg  = gMsg.value.trim();
   if (!msg){ gMsg.focus(); return; }
-  const list = loadEntries();
   const entry = { name: name || 'anonymous legend', msg, at: Date.now() };
+
+  const list = loadEntries();
   list.push(entry);
   saveEntries(list);
-
-  // Send via FormSubmit (no signup, no API key). Each recipient's first submission
-  // will trigger a one-time activation email; after they click the link once,
-  // all future submissions are delivered silently.
-  const subject = "DENİZ GUESTBOOK — " + entry.name;
-  const body =
-    "Yeni ziyaretçi defteri mesajı!\n\n" +
-    "Kimden: " + entry.name + "\n" +
-    "Ne zaman: " + new Date(entry.at).toLocaleString() + "\n\n" +
-    "Mesaj:\n" + entry.msg + "\n\n" +
-    "— deniz countdown sitesinden otomatik gönderildi";
-
-  const hint = document.getElementById('modalHint');
-  const originalHint = hint ? hint.textContent : '';
-  if (hint) hint.textContent = '… gönderiliyor / sending …';
-
-  const sendOne = (to) => fetch('https://formsubmit.co/ajax/' + encodeURIComponent(to), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({
-      _subject: subject,
-      _template: 'box',
-      _captcha: 'false',
-      name: entry.name,
-      message: entry.msg,
-      sent_at: new Date(entry.at).toLocaleString(),
-      full_body: body
-    })
-  }).then(r => r.ok).catch(() => false);
-
-  const results = await Promise.all(RECIPIENTS.map(sendOne));
-  const okCount = results.filter(Boolean).length;
-
-  if (hint){
-    if (okCount === RECIPIENTS.length){
-      hint.textContent = '✓ mesaj ' + okCount + '/' + RECIPIENTS.length + ' kişiye gönderildi / sent to all ' + okCount + ' recipients';
-    } else if (okCount > 0){
-      hint.textContent = '⚠ ' + okCount + '/' + RECIPIENTS.length + ' ok — (ilk gönderimde onay maili gidebilir / first time may require confirmation)';
-    } else {
-      hint.textContent = '✗ gönderilemedi — mesaj tarayıcıda kaydedildi / failed — saved locally only';
-    }
-  }
-
   gName.value = ''; gMsg.value = '';
+  modal.classList.remove('on');
   renderEntries();
-  setTimeout(() => {
-    modal.classList.remove('on');
-    if (hint) hint.textContent = originalHint;
-  }, 2200);
+
+  // Push to shared bin so everyone else sees it too
+  await appendEntryRemote(entry);
+  await syncEntriesFromRemote();
 });
+
+// Pull remote entries, merge with local, persist, re-render
+async function syncEntriesFromRemote(){
+  const s = await fetchStateRemote();
+  if (!s) return;
+  const merged = mergeEntries(loadEntries(), s.entries || []);
+  saveEntries(merged);
+  renderEntries();
+}
 
 /* ==========================================================
    SECRET DARK SITE
@@ -2134,34 +2124,41 @@ arrivalBtn.addEventListener('click', async () => {
   await setArrivedRemote();
 });
 
-// Hydrate state: local first, then override with remote if newer/true
-async function hydrateArrival(){
+// Hydrate state: local first, then override with remote
+async function hydrateFromRemote(){
   if (localStorage.getItem(ARRIVAL_KEY) === '1'){
     arrivedState = true;
   }
-  const remote = await fetchArrivedRemote();
-  if (remote === true){
-    arrivedState = true;
-    localStorage.setItem(ARRIVAL_KEY, '1');
+  const s = await fetchStateRemote();
+  if (s){
+    if (s.arrived === true){
+      arrivedState = true;
+      localStorage.setItem(ARRIVAL_KEY, '1');
+    }
+    const merged = mergeEntries(loadEntries(), s.entries || []);
+    saveEntries(merged);
+    renderEntries();
   }
-  // If countdown already expired, surface the button now
   if (countdownExpired || new Date() >= TARGET_DATE){
     arrivalWrap.style.display = 'block';
     if (arrivedState) markArrived();
-  } else if (arrivedState){
-    // someone clicked before the timer was over? keep for when it ends.
-    // (won't reveal until tick() shows the button)
   }
 }
-hydrateArrival();
-// Poll shared state every 30s so other viewers pick up the click
+hydrateFromRemote();
+
+// Poll shared state every 30s: pick up arrival click + new guestbook entries
 setInterval(async () => {
-  if (arrivedState) return;
-  const remote = await fetchArrivedRemote();
-  if (remote === true){
+  const s = await fetchStateRemote();
+  if (!s) return;
+  if (s.arrived === true && !arrivedState){
     arrivedState = true;
     localStorage.setItem(ARRIVAL_KEY, '1');
     if (arrivalWrap.style.display === 'block') markArrived();
+  }
+  const merged = mergeEntries(loadEntries(), s.entries || []);
+  if (merged.length !== loadEntries().length){
+    saveEntries(merged);
+    renderEntries();
   }
 }, 30000);
 
