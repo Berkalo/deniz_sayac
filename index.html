@@ -1311,6 +1311,47 @@ const RECIPIENTS = [
 const SECRET_PASSWORD = "BİRABİTTİ";
 
 /* ==========================================================
+   SHARED ARRIVAL STATE (JSONBin.io)
+   --------------------------------------------------------------
+   SETUP (one-time, ~60 seconds — otherwise the site falls back
+   silently to localStorage-only / per-browser):
+     1. Go to https://jsonbin.io and sign up (free).
+     2. Create a new bin with content:   {"arrived": false}
+     3. Copy the "Bin ID" (shown after creation) into JSONBIN_ID.
+     4. Go to "Access Keys", create a new Access Key with
+        ONLY the "Read Bin" + "Update Bin" permissions scoped to
+        this bin. Paste it into JSONBIN_KEY.
+   If either is left as "YOUR_..." the button still works locally
+   but won't be synced across devices/people.
+   ========================================================== */
+const JSONBIN_ID  = "YOUR_BIN_ID_HERE";
+const JSONBIN_KEY = "YOUR_ACCESS_KEY_HERE";
+const JSONBIN_CONFIGURED = !JSONBIN_ID.startsWith("YOUR_") && !JSONBIN_KEY.startsWith("YOUR_");
+
+async function fetchArrivedRemote(){
+  if (!JSONBIN_CONFIGURED) return null;
+  try {
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID + '/latest', {
+      headers: { 'X-Access-Key': JSONBIN_KEY }
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && j.record && j.record.arrived === true;
+  } catch(e){ return null; }
+}
+async function setArrivedRemote(){
+  if (!JSONBIN_CONFIGURED) return false;
+  try {
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_ID, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': JSONBIN_KEY },
+      body: JSON.stringify({ arrived: true })
+    });
+    return r.ok;
+  } catch(e){ return false; }
+}
+
+/* ==========================================================
    I18N
    ========================================================== */
 const T = {
@@ -2067,34 +2108,62 @@ aleviCloseBtn.addEventListener('click', () => {
 });
 
 /* ==========================================================
-   ARRIVAL BUTTON — shows when timer hits zero, persists across reloads
+   ARRIVAL BUTTON — shared via JSONBin when configured, else localStorage
    ========================================================== */
 const ARRIVAL_KEY = 'deniz-arrived-v1';
 const arrivalWrap = document.getElementById('arrivalWrap');
 const arrivalBtn  = document.getElementById('arrivalBtn');
 
+let arrivedState = false;
+
 function showArrivalButton(){
   if (!arrivalWrap) return;
   arrivalWrap.style.display = 'block';
-  if (localStorage.getItem(ARRIVAL_KEY) === '1'){
-    markArrived();
-  }
+  if (arrivedState) markArrived();
 }
 function markArrived(){
   arrivalBtn.textContent = 'DENIZ IS HEREEE';
   arrivalBtn.classList.add('arrived');
-  // extra floaters celebrating
+  arrivedState = true;
   for (let i = 0; i < 30; i++) setTimeout(spawnFloater, i * 20);
 }
-arrivalBtn.addEventListener('click', () => {
+arrivalBtn.addEventListener('click', async () => {
   localStorage.setItem(ARRIVAL_KEY, '1');
   markArrived();
+  // push to shared bin (fire-and-forget; failure just means per-browser persistence)
+  await setArrivedRemote();
 });
-// If user already pressed it in a previous session, restore state immediately
-if (localStorage.getItem(ARRIVAL_KEY) === '1'){
-  arrivalWrap.style.display = 'block';
-  markArrived();
+
+// Hydrate state: local first, then override with remote if newer/true
+async function hydrateArrival(){
+  if (localStorage.getItem(ARRIVAL_KEY) === '1'){
+    arrivedState = true;
+  }
+  const remote = await fetchArrivedRemote();
+  if (remote === true){
+    arrivedState = true;
+    localStorage.setItem(ARRIVAL_KEY, '1');
+  }
+  // If countdown already expired, surface the button now
+  if (countdownExpired || new Date() >= TARGET_DATE){
+    arrivalWrap.style.display = 'block';
+    if (arrivedState) markArrived();
+  } else if (arrivedState){
+    // someone clicked before the timer was over? keep for when it ends.
+    // (won't reveal until tick() shows the button)
+  }
 }
+hydrateArrival();
+// Poll shared state every 30s so other viewers pick up the click
+setInterval(async () => {
+  if (arrivedState) return;
+  const remote = await fetchArrivedRemote();
+  if (remote === true){
+    arrivedState = true;
+    localStorage.setItem(ARRIVAL_KEY, '1');
+    if (arrivalWrap.style.display === 'block') markArrived();
+  }
+}, 30000);
 
 /* boot */
 applyLang();
