@@ -224,6 +224,52 @@ body::before {
   transform: rotate(-0.5deg);
 }
 
+/* ===== ARRIVAL BUTTON ===== */
+.arrival-btn {
+  font-family: 'Lilita One', sans-serif;
+  font-size: clamp(22px, 3.5vw, 36px);
+  letter-spacing: 2px;
+  padding: 18px 36px;
+  color: #000;
+  background: linear-gradient(180deg, #fff 0%, var(--lime) 40%, #4a7a00 100%);
+  border: 4px solid #000;
+  border-radius: 40px;
+  box-shadow:
+    0 0 0 4px var(--hot-pink),
+    8px 8px 0 #000,
+    0 0 30px var(--lime);
+  cursor: pointer;
+  text-transform: uppercase;
+  animation: arrivalPulse 1.2s ease-in-out infinite;
+  position: relative;
+}
+.arrival-btn:hover { transform: translate(-3px,-3px) rotate(-2deg); }
+.arrival-btn:active { transform: translate(3px,3px); box-shadow: 0 0 0 4px var(--hot-pink), 3px 3px 0 #000, 0 0 30px var(--lime); }
+@keyframes arrivalPulse {
+  0%,100% { box-shadow: 0 0 0 4px var(--hot-pink), 8px 8px 0 #000, 0 0 20px var(--lime); }
+  50%     { box-shadow: 0 0 0 4px var(--hot-pink), 8px 8px 0 #000, 0 0 50px var(--lime), 0 0 80px var(--hot-pink); }
+}
+.arrival-btn.arrived {
+  font-family: 'Monoton', cursive;
+  font-size: clamp(28px, 5vw, 56px);
+  background: linear-gradient(135deg, var(--hot-pink), var(--electric-blue), var(--lime), var(--gold));
+  background-size: 300% 300%;
+  color: #fff;
+  -webkit-text-stroke: 2px #000;
+  text-shadow: 3px 3px 0 #000, 0 0 30px #fff;
+  animation: arrivedDance 0.8s ease-in-out infinite, hueSlide 3s linear infinite;
+  cursor: default;
+  pointer-events: none;
+}
+@keyframes arrivedDance {
+  0%,100% { transform: rotate(-3deg) scale(1); }
+  50%     { transform: rotate(3deg) scale(1.05); }
+}
+@keyframes hueSlide {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
 /* ===== LOVE NOTE ===== */
 .love-note {
   max-width: 780px;
@@ -1033,6 +1079,11 @@ footer {
 
   <div class="finale" id="finale">DENİZ GELDİ. ANKARA BİR DAHA ESKİSİ GİBİ OLMAYACAK. 💖🍺✨</div>
 
+  <!-- Post-countdown arrival button (shown when timer hits zero) -->
+  <div id="arrivalWrap" style="display:none; text-align:center; margin:20px auto 30px;">
+    <button id="arrivalBtn" class="arrival-btn">IS DENIZ ARRIVED?</button>
+  </div>
+
   <!-- LOVE NOTE -->
   <section class="love-note">
     <span class="safety-pin">🧷</span>
@@ -1537,6 +1588,7 @@ function tick(){
     elFin.style.display = "block";
     elBeer.textContent = LANG === 'tr' ? "🍺 vakit geldi. bira senin. 🍺" : "🍺 it's time. the beer is yours. 🍺";
     countdownExpired = true;
+    showArrivalButton();
     updateDarkCounter();
     return;
   }
@@ -2013,6 +2065,36 @@ aleviCloseBtn.addEventListener('click', () => {
   aleviSection.style.display = 'none';
   aleviCloseBtn.style.display = 'none';
 });
+
+/* ==========================================================
+   ARRIVAL BUTTON — shows when timer hits zero, persists across reloads
+   ========================================================== */
+const ARRIVAL_KEY = 'deniz-arrived-v1';
+const arrivalWrap = document.getElementById('arrivalWrap');
+const arrivalBtn  = document.getElementById('arrivalBtn');
+
+function showArrivalButton(){
+  if (!arrivalWrap) return;
+  arrivalWrap.style.display = 'block';
+  if (localStorage.getItem(ARRIVAL_KEY) === '1'){
+    markArrived();
+  }
+}
+function markArrived(){
+  arrivalBtn.textContent = 'DENIZ IS HEREEE';
+  arrivalBtn.classList.add('arrived');
+  // extra floaters celebrating
+  for (let i = 0; i < 30; i++) setTimeout(spawnFloater, i * 20);
+}
+arrivalBtn.addEventListener('click', () => {
+  localStorage.setItem(ARRIVAL_KEY, '1');
+  markArrived();
+});
+// If user already pressed it in a previous session, restore state immediately
+if (localStorage.getItem(ARRIVAL_KEY) === '1'){
+  arrivalWrap.style.display = 'block';
+  markArrived();
+}
 
 /* boot */
 applyLang();
