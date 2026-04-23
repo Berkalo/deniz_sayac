@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>★ DENİZ GERİ DÖNÜYOR ★ ANKARA SAYAÇ ★</title>
+<title>★ THE DENIZ COUNTDOWN ★ ANKARA AWAITS ★</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -745,6 +745,76 @@ footer {
 }
 .secret-dot:hover { background: rgba(255,46,196,0.3); }
 
+/* Bottom-right door (unlocks Alevi köşesi) */
+.door-btn {
+  position: fixed;
+  bottom: 80px; right: 18px;
+  z-index: 60;
+  width: 58px; height: 82px;
+  background: linear-gradient(180deg, #5b2a00 0%, #7a3a00 50%, #3a1a00 100%);
+  border: 3px solid #000;
+  border-radius: 6px 6px 2px 2px;
+  box-shadow: 0 0 0 3px var(--gold), 4px 4px 0 #000, inset 0 2px 0 rgba(255,217,60,0.4);
+  cursor: pointer;
+  color: var(--gold);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 11px;
+  text-align: center;
+  padding: 0; margin: 0;
+  letter-spacing: 1px;
+  transition: transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 6px;
+}
+.door-btn::before {
+  content: "";
+  position: absolute;
+  top: 10px; left: 50%;
+  width: 70%; height: 40%;
+  transform: translateX(-50%);
+  border: 2px solid rgba(255,217,60,0.35);
+  border-radius: 4px;
+}
+.door-btn::after {
+  content: "●";
+  position: absolute;
+  top: 42%; right: 10px;
+  color: var(--gold);
+  font-size: 10px;
+  text-shadow: 0 0 4px var(--gold);
+}
+.door-btn:hover { transform: translate(-2px,-2px); }
+.door-btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 3px var(--gold), 2px 2px 0 #000, inset 0 2px 0 rgba(255,217,60,0.4); }
+.door-btn span { display: block; z-index: 2; }
+
+/* Alevi overlay modal (shown after unlock) */
+.alevi-back {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 140;
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+  padding: 40px 16px;
+}
+.alevi-back.on { display: block; }
+.alevi-close {
+  position: fixed;
+  top: 18px; right: 18px;
+  z-index: 145;
+  background: #000;
+  color: var(--gold);
+  border: 2px solid var(--gold);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: 'Permanent Marker', cursive;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
 /* ===== PASSWORD MODAL ===== */
 .pw-back {
   display: none;
@@ -923,8 +993,8 @@ footer {
 
 <!-- ============ LANGUAGE TOGGLE ============ -->
 <div class="lang-toggle" role="group" aria-label="Language">
-  <button id="btn-tr" class="on">TR</button>
-  <button id="btn-en">EN</button>
+  <button id="btn-en" class="on">EN</button>
+  <button id="btn-tr">TR</button>
 </div>
 
 <!-- ============ TICKER ============ -->
@@ -1007,8 +1077,8 @@ footer {
     <div class="foam"></div>
   </section>
 
-  <!-- ALEVI SECTION -->
-  <section class="alevi">
+  <!-- ALEVI SECTION (hidden by default, unlocked via bottom-right door button + password EYVALLAH) -->
+  <section class="alevi" id="aleviSection" style="display:none;">
     <h2 id="aleviTitle">✦ ALEVİ KÖŞESİ: EYVALLAH CANIM ✦</h2>
     <div class="saz">🎶</div>
     <div class="cem-circle">
@@ -1100,6 +1170,14 @@ footer {
     <span class="secret-dot" id="secretDot" title="?"></span>
   </footer>
 </main>
+
+<!-- DOOR BUTTON (bottom-right) → password-gated Alevi köşesi -->
+<button class="door-btn" id="doorBtn" aria-label="Secret door" title="?">
+  <span>🚪</span>
+  <span>?</span>
+</button>
+
+<button class="alevi-close" id="aleviCloseBtn" style="display:none;">✕ kapat</button>
 
 <!-- MUSIC PLAYER -->
 <div class="player" id="player" aria-label="Music">
@@ -1381,11 +1459,10 @@ function applyLang(){
   document.getElementById('loveBody').innerHTML = t.loveBody;
   document.getElementById('beerTitle').textContent = t.beerTitle;
   document.getElementById('beerText').textContent = t.beerText;
-  document.getElementById('aleviTitle').textContent = t.aleviTitle;
-  document.getElementById('aleviIntro').textContent = t.aleviIntro;
-  document.getElementById('aleviSozu').textContent = t.aleviSozu;
-  document.getElementById('pirSultan').textContent = t.pirSultan;
-  document.getElementById('pirKaynak').textContent = t.pirKaynak;
+  const aleviTitleEl = document.getElementById('aleviTitle');
+  if (aleviTitleEl) aleviTitleEl.textContent = t.aleviTitle;
+  const aleviIntroEl = document.getElementById('aleviIntro');
+  if (aleviIntroEl) aleviIntroEl.textContent = t.aleviIntro;
   document.getElementById('factsTitle').textContent = t.factsTitle;
   const fl = document.getElementById('factsList');
   fl.innerHTML = t.facts.map(f => '<li>' + f + '</li>').join('');
@@ -1646,7 +1723,7 @@ const darkExit = document.getElementById('darkExit');
 function openPw(){ pwBack.classList.add('on'); pwInput.value = ''; pwErr.textContent = ''; setTimeout(() => pwInput.focus(), 50); }
 function closePw(){ pwBack.classList.remove('on'); }
 
-document.getElementById('secretDot').addEventListener('click', openPw);
+document.getElementById('secretDot').addEventListener('click', () => { /* routed below */ });
 pwCancel.addEventListener('click', closePw);
 pwBack.addEventListener('click', e => { if (e.target === pwBack) closePw(); });
 pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwGo.click(); });
@@ -1673,7 +1750,7 @@ document.addEventListener('keydown', e => {
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
   if (k === konami[kIdx]){
     kIdx++;
-    if (kIdx === konami.length){ kIdx = 0; openPw(); }
+    if (kIdx === konami.length){ kIdx = 0; openPwFor('dark'); }
   } else { kIdx = 0; }
 });
 
@@ -1789,6 +1866,74 @@ function renderBingo(){
     grid.appendChild(c);
   });
 }
+
+/* ==========================================================
+   DOOR → ALEVI KÖŞESİ (password-gated)
+   Password: EYVALLAH
+   ========================================================== */
+const ALEVI_PASSWORD = "EYVALLAH";
+const aleviSection = document.getElementById('aleviSection');
+const aleviCloseBtn = document.getElementById('aleviCloseBtn');
+const doorBtn = document.getElementById('doorBtn');
+
+let pwTarget = 'dark'; // 'dark' or 'alevi'
+
+function openPwFor(kind){
+  pwTarget = kind;
+  pwBack.classList.add('on');
+  pwInput.value = '';
+  pwErr.textContent = '';
+  const title = pwBack.querySelector('h3');
+  const hint = pwBack.querySelector('div[style]');
+  if (kind === 'alevi'){
+    title.textContent = '> ALEVİ KÖŞESİ';
+    if (hint) hint.textContent = 'yolun açık olsun. şifre gerekli.';
+  } else {
+    title.textContent = '> RESTRICTED AREA';
+    if (hint) hint.textContent = 'kimse burayı bulamamalıydı. şifre gerekli.';
+  }
+  setTimeout(() => pwInput.focus(), 50);
+}
+
+doorBtn.addEventListener('click', () => openPwFor('alevi'));
+
+// Override pw handlers to route by target
+pwGo.replaceWith(pwGo.cloneNode(true));
+const pwGoFresh = document.getElementById('pwGo');
+function normalizePw(s){
+  return (s || '').trim()
+    .toLocaleUpperCase('tr-TR')
+    .replace(/İ/g, 'I')
+    .replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+}
+pwGoFresh.addEventListener('click', () => {
+  const v = normalizePw(pwInput.value);
+  if (pwTarget === 'alevi'){
+    if (v === normalizePw(ALEVI_PASSWORD)){
+      closePw();
+      aleviSection.style.display = '';
+      aleviCloseBtn.style.display = '';
+      aleviSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      pwErr.textContent = '> ERİŞİM YOK — eyvallah değil';
+    }
+  } else {
+    if (v === normalizePw(SECRET_PASSWORD) || v === 'BIRABITTI'){
+      closePw();
+      darkSite.classList.add('on');
+      startDarkRain();
+    } else {
+      pwErr.textContent = '> ACCESS DENIED';
+    }
+  }
+});
+pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') pwGoFresh.click(); });
+document.getElementById('secretDot').addEventListener('click', () => openPwFor('dark'));
+
+aleviCloseBtn.addEventListener('click', () => {
+  aleviSection.style.display = 'none';
+  aleviCloseBtn.style.display = 'none';
+});
 
 /* boot */
 applyLang();
