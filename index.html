@@ -1300,7 +1300,7 @@ const T = {
     gMsgPh: "tatlı, dengesiz ya da bira temalı bir şey söyle…",
     cancelBtn: "iptal",
     saveBtn: "gönder ✿",
-    modalHint: "→ gönder'e basınca mail istemcin hazır açılır ve 3 kişiye gider: yıldız, utku, ilksen.",
+    modalHint: "→ gönder'e basınca mesajın yıldız, utku ve ilksen'e e-posta olarak gider (formsubmit üzerinden). ayrıca tarayıcında da saklanır.",
     footerText: "☆ glitter, bira köpüğü ve ayrılık anksiyetesiyle yapıldı ☆ sadece deniz için ☆ 5 mayıs 17:00 ankara ☆",
     playerLabel: "şimdi<br>çalıyor…",
     beerLines: [
@@ -1387,7 +1387,7 @@ const T = {
     gMsgPh: "tell her something sweet, unhinged, or beer-related…",
     cancelBtn: "cancel",
     saveBtn: "send ✿",
-    modalHint: "→ clicking send opens your mail client to all 3 addresses: yıldız, utku, ilksen.",
+    modalHint: "→ clicking send emails yıldız, utku & ilksen directly (via formsubmit). also saved in your browser.",
     footerText: "☆ made with glitter, beer foam & separation anxiety ☆ for deniz only ☆ may 5, 17:00 ankara ☆",
     playerLabel: "now<br>spinning…",
     beerLines: [
@@ -1727,7 +1727,7 @@ renderEntries();
 openBtn.addEventListener('click', () => { modal.classList.add('on'); gName.focus(); });
 cancelBtn.addEventListener('click', () => modal.classList.remove('on'));
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
-saveBtn.addEventListener('click', () => {
+saveBtn.addEventListener('click', async () => {
   const name = gName.value.trim();
   const msg  = gMsg.value.trim();
   if (!msg){ gMsg.focus(); return; }
@@ -1736,22 +1736,54 @@ saveBtn.addEventListener('click', () => {
   list.push(entry);
   saveEntries(list);
 
-  // Fire mailto with all 3 recipients
-  const subject = encodeURIComponent("✧ DENİZ GUESTBOOK — " + (entry.name));
-  const body = encodeURIComponent(
+  // Send via FormSubmit (no signup, no API key). Each recipient's first submission
+  // will trigger a one-time activation email; after they click the link once,
+  // all future submissions are delivered silently.
+  const subject = "DENİZ GUESTBOOK — " + entry.name;
+  const body =
     "Yeni ziyaretçi defteri mesajı!\n\n" +
     "Kimden: " + entry.name + "\n" +
     "Ne zaman: " + new Date(entry.at).toLocaleString() + "\n\n" +
     "Mesaj:\n" + entry.msg + "\n\n" +
-    "— deniz countdown sitesinden otomatik gönderildi"
-  );
-  const mailto = "mailto:" + RECIPIENTS.join(",") + "?subject=" + subject + "&body=" + body;
-  // open mail client
-  window.location.href = mailto;
+    "— deniz countdown sitesinden otomatik gönderildi";
+
+  const hint = document.getElementById('modalHint');
+  const originalHint = hint ? hint.textContent : '';
+  if (hint) hint.textContent = '… gönderiliyor / sending …';
+
+  const sendOne = (to) => fetch('https://formsubmit.co/ajax/' + encodeURIComponent(to), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      _subject: subject,
+      _template: 'box',
+      _captcha: 'false',
+      name: entry.name,
+      message: entry.msg,
+      sent_at: new Date(entry.at).toLocaleString(),
+      full_body: body
+    })
+  }).then(r => r.ok).catch(() => false);
+
+  const results = await Promise.all(RECIPIENTS.map(sendOne));
+  const okCount = results.filter(Boolean).length;
+
+  if (hint){
+    if (okCount === RECIPIENTS.length){
+      hint.textContent = '✓ mesaj ' + okCount + '/' + RECIPIENTS.length + ' kişiye gönderildi / sent to all ' + okCount + ' recipients';
+    } else if (okCount > 0){
+      hint.textContent = '⚠ ' + okCount + '/' + RECIPIENTS.length + ' ok — (ilk gönderimde onay maili gidebilir / first time may require confirmation)';
+    } else {
+      hint.textContent = '✗ gönderilemedi — mesaj tarayıcıda kaydedildi / failed — saved locally only';
+    }
+  }
 
   gName.value = ''; gMsg.value = '';
-  modal.classList.remove('on');
   renderEntries();
+  setTimeout(() => {
+    modal.classList.remove('on');
+    if (hint) hint.textContent = originalHint;
+  }, 2200);
 });
 
 /* ==========================================================
